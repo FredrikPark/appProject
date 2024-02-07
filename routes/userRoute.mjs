@@ -11,7 +11,7 @@ USER_API.use(express.json());
 
 const users = [];
 
-
+// here for testing purposes
 USER_API.get("/", (req, res, next) => {
     res.json(users)
 })
