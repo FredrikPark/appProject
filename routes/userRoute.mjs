@@ -50,12 +50,12 @@ USER_API.post('/', (req, res) => {
 
             users.push(user);
 
-            res.status(200).json({ message: 'User registered successfully' });
+            res.status(HTTPCodes.SuccesfullRespons.Ok).json({ message: 'User registered successfully' });
         } else {
-            res.status(400).json({ error: 'User already exists' });
+            res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).json({ error: 'User already exists' });
         }
     } else {
-        res.status(400).json({ error: 'Missing data fields' });
+        res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).json({ error: 'Missing data fields' });
     }
 });
 
