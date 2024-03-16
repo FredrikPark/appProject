@@ -1,19 +1,37 @@
 import pkg from 'pg';
-const { Pool } = pkg;
+const { Client } = pkg;
+import 'dotenv/config'
 
+function createClient(connectionString) {
+    return new Client({
+        connectionString,
+        ssl: (process.env.DB_SSL === "true") ? { rejectUnauthorized: false } : false 
+    });
+}
 
-const pool = new Pool({
-    user: 'postgres',
-    password: '150302',
-    host: 'localhost',
-    port: 5432,
-    database: 'users',
-});
+let client;
 
+if (process.env.ENVIORMENT === 'local') {
 
-pool.on('error', (err, client) => {
-    console.error('Unexpected error on idle client', err);
-    process.exit(-1);
-});
+    const connectionString = process.env.DB_CONNECTIONSTRING_LOCAL;
+    client = createClient(connectionString);
+} else if (process.env.ENVIORMENT === 'prod') {
 
-export default pool;
+    const connectionString = process.env.DB_CONNECTIONSTRING_PROD;
+    client = createClient(connectionString);
+} else {
+    throw new Error('Invalid environment specified');
+}
+
+async function connectToDatabase() {
+    try {
+        await client.connect();
+        console.log('Connected to the database');
+    } catch (error) {
+        console.error('Error connecting to the database:', error);
+    }
+}
+
+connectToDatabase();
+
+export default client;

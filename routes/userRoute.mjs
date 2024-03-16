@@ -2,7 +2,7 @@ import express from 'express';
 import User from '../modules/user.mjs';
 import { HTTPCodes } from "../modules/httpConstants.mjs";
 import hashPassword from '../modules/passwordHasher.mjs';
-import pool from '../postgresql.mjs';
+import client from '../postgresql.mjs';
 
 
 
@@ -37,13 +37,11 @@ USER_API.post('/', async (req, res) => {
     const { name, email, pswHash } = req.body;
 
     try {
-        const client = await pool.connect();
         const existsQuery = 'SELECT * FROM users WHERE email = $1';
         const existsResult = await client.query(existsQuery, [email]);
         if (existsResult.rows.length === 0) {
             const insertQuery = 'INSERT INTO users (name, email, password) VALUES ($1, $2, $3)';
             await client.query(insertQuery, [name, email, pswHash]);
-            client.release();
             res.status(HTTPCodes.SuccesfullRespons.Ok).json({ message: 'User registered successfully' });
         } else {
             res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).json({ error: 'User already exists' });
