@@ -2,6 +2,7 @@ import express from 'express';
 import User from '../modules/user.mjs';
 import { HTTPCodes } from "../modules/httpConstants.mjs";
 import hashPassword from '../modules/passwordHasher.mjs';
+import pool from '../postgresql.mjs';
 
 
 
@@ -11,10 +12,7 @@ USER_API.use(express.json());
 
 const users = [];
 
-// here for testing purposes
-USER_API.get("/", (req, res, next) => {
-    res.json(users)
-})
+
 
 USER_API.get("/new", (req, res, next) => {
     res.send("User New Form")
@@ -35,27 +33,24 @@ USER_API.use(async (req, res, next) => {
     }
 });
 
-USER_API.post('/', (req, res) => {
+USER_API.post('/', async (req, res) => {
     const { name, email, pswHash } = req.body;
 
-    if (name && email && pswHash) {
-        
-        const exists = users.some(user => user.email === email);
-        if (!exists) {
-
-            const user = new User();
-            user.name = name;
-            user.email = email;
-            user.pswHash = pswHash
-
-            users.push(user);
-
+    try {
+        const client = await pool.connect();
+        const existsQuery = 'SELECT * FROM users WHERE email = $1';
+        const existsResult = await client.query(existsQuery, [email]);
+        if (existsResult.rows.length === 0) {
+            const insertQuery = 'INSERT INTO users (name, email, password) VALUES ($1, $2, $3)';
+            await client.query(insertQuery, [name, email, pswHash]);
+            client.release();
             res.status(HTTPCodes.SuccesfullRespons.Ok).json({ message: 'User registered successfully' });
         } else {
             res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).json({ error: 'User already exists' });
         }
-    } else {
-        res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).json({ error: 'Missing data fields' });
+    } catch (error) {
+        console.error('Error creating user:', error);
+        res.status(500).json({ error: 'Internal server error' });
     }
 });
 
@@ -64,12 +59,38 @@ USER_API.get("/:id", (req, res) => {
     res.send("Get user with ID " + req.params.id)
 })
 
+// Edit User Route
 USER_API.put('/:id', (req, res) => {
-    /// TODO: Edit user
-})
+    const userId = req.params.id;
+    const { name, email } = req.body;
 
+    // Update user record in the database
+    // Example: Update the user's name and email based on the provided ID
+    pool.query('UPDATE users SET name = $1, email = $2 WHERE id = $3', [name, email, userId], (error, result) => {
+        if (error) {
+            console.error('Error updating user:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        } else {
+            res.status(200).json({ message: 'User updated successfully' });
+        }
+    });
+});
+
+// Delete User Route
 USER_API.delete('/:id', (req, res) => {
-    /// TODO: Delete user.
-})
+    const userId = req.params.id;
+
+    // Delete user record from the database
+    // Example: Delete the user based on the provided ID
+    pool.query('DELETE FROM users WHERE id = $1', [userId], (error, result) => {
+        if (error) {
+            console.error('Error deleting user:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        } else {
+            res.status(200).json({ message: 'User deleted successfully' });
+        }
+    });
+});
+
 
 export default USER_API

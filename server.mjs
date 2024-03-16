@@ -1,5 +1,8 @@
+import dotenv from 'dotenv';
 import express from 'express';
 import USER_API from './routes/userRoute.mjs';
+
+dotenv.config();
 
 const server = express();
 
