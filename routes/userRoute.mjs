@@ -10,14 +10,6 @@ const USER_API = express.Router();
 USER_API.use(express.json());
 
 
-const users = [];
-
-
-
-USER_API.get("/new", (req, res, next) => {
-    res.send("User New Form")
-})
-
 USER_API.use(async (req, res, next) => {
     const { password } = req.body;
     if (password) {
@@ -51,6 +43,7 @@ USER_API.post('/', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
 
 USER_API.get("/:id", (req, res) => {
     req.params.id
@@ -89,6 +82,7 @@ USER_API.delete('/:id', (req, res) => {
         }
     });
 });
+
 
 
 export default USER_API

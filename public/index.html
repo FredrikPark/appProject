@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <title>My app</title>
 </head>
 
@@ -14,15 +15,34 @@
         Email: <input type="email" id="email"><br />
         Password: <input type="password" id="password"><br />
         <button id="createUserButton">Create User</button>
+        <button id="loginRedirectButton">Login Instead</button>
     </div>
+
+    //posts
+    <div class="container">
+        <h1 class="mb-4">Posts</h1>
+        <a href="/posts/new" class="btn btn-succes">New Post</a>
+
+        <% posts.forEach(post => { %>
+            <div class="card mt-4">
+                <% post.title %>
+            </div>
+        <% }) %>
+
+    </div>
+
+
+
 
     <script>
         const createUserButton = document.getElementById("createUserButton");
+        const loginRedirectButton = document.getElementById("loginRedirectButton");
 
         createUserButton.onclick = async function (e) {
             const name = document.getElementById("name").value;
             const email = document.getElementById("email").value;
             const password = document.getElementById("password").value;
+
 
             const user = { name, email, password };
 
@@ -33,6 +53,10 @@
                 const errorMessage = await response.text();
                 alert(errorMessage || "An error occurred while registering the user.");
             }
+        }
+
+        loginRedirectButton.onclick = function () {
+            window.location.href = "/login";
         }
 
         async function postTo(url, data) {
