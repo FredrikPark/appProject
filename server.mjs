@@ -10,11 +10,13 @@ dotenv.config();
 
 const server = express();
 
+server.use(express.json());
+
 const port = (process.env.PORT || 8080);
 server.set('port', port);
 
 server.set('view engine', 'ejs');
-server.set('views', './views'); // Specify the directory where your EJS files are located
+server.set('views', './views');
 
 
 server.use(express.static('public'));

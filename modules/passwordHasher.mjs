@@ -1,6 +1,5 @@
 import bcrypt from 'bcrypt';
 
-// Function to hash the password using bcrypt
 async function hashPassword(password) {
     try {
         const hashedPassword = await bcrypt.hash(password, 10);

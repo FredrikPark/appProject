@@ -11,18 +11,24 @@
 <body>
 
     <div>
-        <h2>Register</h2>
-        Name: <input type="text" id="name"><br>
-        Email: <input type="email" id="email"><br />
-        Password: <input type="password" id="password"><br />
-        <button id="createUserButton" class="btn btn-primary">Create User</button>
+        <h2>Login</h2>
+        <div class="form-group">
+            Email: <input  type="email" id="loginEmail"><br />
+            Password: <input  type="password" id="loginPassword"><br />
+        </div>
+        
+        <button id="loginButton" class="btn btn-primary mt-1">Login</button>
     </div>
 
     <div>
-        <h2>Login</h2>
-        Email: <input type="email" id="loginEmail"><br />
-        Password: <input type="password" id="loginPassword"><br />
-        <button id="loginButton" class="btn btn-primary">Login</button>
+        <h2 class="mt-4">Register</h2>
+        <div class="form-group">
+            Name: <input type="text" id="name"><br>
+            Email: <input  type="email" id="email"><br />
+            Password: <input  type="password" id="password"><br />
+        </div>
+        
+        <button id="createUserButton" class="btn btn-primary mt-1">Create User</button>
     </div>
 
     <script>
@@ -48,36 +54,55 @@
         }
 
         loginButton.onclick = async function (e) {
-            const email = document.getElementById("loginEmail").value;
-            const password = document.getElementById("loginPassword").value;
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
 
-            const user = { email, password };
+    const user = { email, password };
 
-            const response = await postTo("/login", user);
-            if (response.ok) {
-                alert("Login successful!");
-            } else {
-                const errorMessage = await response.text();
-                alert(errorMessage || "An error occurred while logging in.");
-            }
+    try {
+        const response = await postTo("/login", user);
+        if (response.error) {
+            throw new Error(response.error);
         }
+
+        const token = response.token;
+
+        localStorage.setItem('token', token);
+        window.location.href = '/posts';
+
+        alert("Login successful!");
+    } catch (error) {
+        alert(error.message || "An error occurred while logging in.");
+    }
+}
+
 
 
         async function postTo(url, data) {
-            try {
-                const response = await fetch(url, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(data)
-                });
-                return response;
-            } catch (error) {
-                console.error("Error:", error);
-                throw new Error("Failed to fetch data from the server.");
-            }
+    try { 
+        const response = await fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            throw new Error(`Failed to ${response.statusText}`);
         }
+
+        const responseData = await response.json(); // Parse response data
+
+        return responseData;
+    } catch (error) {
+        console.error("Error:", error);
+        throw new Error("Failed to fetch data from the server.");
+    }
+}
+
+
+
     </script>
 
 </body>

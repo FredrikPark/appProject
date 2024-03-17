@@ -1,9 +1,14 @@
 import express from 'express';
 import bcrypt from 'bcrypt';
 import client from '../postgresql.mjs';
+import jwt from 'jsonwebtoken';
+import { HTTPCodes } from '../modules/httpConstants.mjs';
+
 
 const LOGIN_API = express.Router();
 LOGIN_API.use(express.json());
+
+const JWT_SECRET = 'key';
 
 LOGIN_API.post('/', async (req, res) => {
     const { email, password } = req.body;
@@ -17,16 +22,19 @@ LOGIN_API.post('/', async (req, res) => {
             const isPasswordValid = await bcrypt.compare(password, user.password);
 
             if (isPasswordValid) {
-                res.status(200).json({ message: 'Login successful' });
+
+                const token = jwt.sign({ userId: user.id}, JWT_SECRET, { expiresIn: '1h' });
+
+                res.status(HTTPCodes.SuccesfullRespons.Ok).json({ token });
             } else {
-                res.status(400).json({ error: 'Invalid email or password' });
+                res.status(HTTPCodes.ClientSideErrorRespons.BadRequest).json({ error: 'Invalid email or password' });
             }
         } else {
-            res.status(404).json({ error: 'User not found' });
+            res.status(HTTPCodes.ClientSideErrorRespons.NotFound).json({ error: 'User not found' });
         }
     } catch (error) {
         console.error('Error logging in:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(HTTPCodes.ServerErrorRespons.InternalError).json({ error: 'Internal server error' });
     }
 });
 
