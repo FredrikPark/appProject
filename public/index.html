@@ -11,32 +11,24 @@
 <body>
 
     <div>
-        Name : <input type="text" id="name"><br>
+        <h2>Register</h2>
+        Name: <input type="text" id="name"><br>
         Email: <input type="email" id="email"><br />
         Password: <input type="password" id="password"><br />
-        <button id="createUserButton">Create User</button>
-        <button id="loginRedirectButton">Login Instead</button>
+        <button id="createUserButton" class="btn btn-primary">Create User</button>
     </div>
 
-    //posts
-    <div class="container">
-        <h1 class="mb-4">Posts</h1>
-        <a href="/posts/new" class="btn btn-succes">New Post</a>
-
-        <% posts.forEach(post => { %>
-            <div class="card mt-4">
-                <% post.title %>
-            </div>
-        <% }) %>
-
+    <div>
+        <h2>Login</h2>
+        Email: <input type="email" id="loginEmail"><br />
+        Password: <input type="password" id="loginPassword"><br />
+        <button id="loginButton" class="btn btn-primary">Login</button>
     </div>
-
-
-
 
     <script>
         const createUserButton = document.getElementById("createUserButton");
-        const loginRedirectButton = document.getElementById("loginRedirectButton");
+        const loginButton = document.getElementById("loginButton");
+
 
         createUserButton.onclick = async function (e) {
             const name = document.getElementById("name").value;
@@ -55,9 +47,21 @@
             }
         }
 
-        loginRedirectButton.onclick = function () {
-            window.location.href = "/login";
+        loginButton.onclick = async function (e) {
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
+
+            const user = { email, password };
+
+            const response = await postTo("/login", user);
+            if (response.ok) {
+                alert("Login successful!");
+            } else {
+                const errorMessage = await response.text();
+                alert(errorMessage || "An error occurred while logging in.");
+            }
         }
+
 
         async function postTo(url, data) {
             try {
